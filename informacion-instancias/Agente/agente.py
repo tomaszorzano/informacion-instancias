@@ -32,21 +32,24 @@ def obtener_informacion():
             for proc in psutil.process_iter(['pid', 'name', 'status']) 
             if proc.info['status'] == psutil.STATUS_RUNNING
         ],
-        "usuarios_activos": psutil.users(),  # Usuarios actualmente conectados
+        "usuarios_activos": [user._asdict() for user in psutil.users()],  # Convertir a dict
         "todos_los_usuarios": obtener_usuarios(),  # Todos los usuarios en la máquina
         "sistema_operativo": platform.system(),
         "version_sistema": platform.version()
     }
     return info
 
-print(obtener_informacion())
-
 def enviar_informacion(info, url):
     response = requests.post(url, json=info)
     return response.status_code
 
 if __name__ == "__main__":
-    url_api = ""  # Especifica aquí la URL de la API a la que enviar la información
+    base_url = "https://t3jxqxig0f.execute-api.us-east-1.amazonaws.com/dev"
+    endpoint_guardar = f"{base_url}/guardar"
+    
+    # Obtener información de la instancia
     info = obtener_informacion()
-    status = enviar_informacion(info, url_api)
-    print(f"Envio completado con estado: {status}")
+    
+    # Enviar información a la API
+    status = enviar_informacion(info, endpoint_guardar)
+    print(f"Envío completado con estado: {status}")
