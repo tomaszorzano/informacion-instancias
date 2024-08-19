@@ -1,0 +1,38 @@
+service: flask-api-s3 
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: us-east-1
+  environment:
+    S3_BUCKET: informacion-instancias  
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:PutObject"
+        - "s3:GetObject"
+      Resource: "arn:aws:s3:::informacion-instancias/*"
+
+functions:
+  app:
+    handler: wsgi_handler.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+
+plugins:
+  - serverless-wsgi
+  - serverless-python-requirements
+
+custom:
+  wsgi:
+    app: app.app
+    packRequirements: false
+  pythonRequirements:
+    dockerizePip: non-linux
+
+package:
+  exclude:
+    - node_modules/**
+    - .serverless/**
+    - .venv/**
