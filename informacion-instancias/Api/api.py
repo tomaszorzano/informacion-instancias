@@ -7,8 +7,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Configuración de S3
-S3_BUCKET = os.environ.get('S3_BUCKET')  # El bucket se configura en las variables de entorno
+S3_BUCKET = os.environ.get('S3_BUCKET') 
 s3_client = boto3.client('s3')
 
 @app.route('/guardar', methods=['POST'])
@@ -19,14 +18,12 @@ def guardar_informacion():
     filename = f"{ip_cliente}_{fecha}.csv"
     
     keys = data.keys()
-    
-    # Crear un archivo CSV en memoria
+
     csv_buffer = StringIO()
     writer = csv.DictWriter(csv_buffer, fieldnames=keys)
     writer.writeheader()
     writer.writerow(data)
-    
-    # Subir el archivo CSV a S3
+   
     try:
         s3_client.put_object(Bucket=S3_BUCKET, Key=filename, Body=csv_buffer.getvalue())
         return "Información guardada en S3", 200
@@ -39,11 +36,10 @@ def consultar_informacion(ip):
     filename = f"{ip}_{fecha}.csv"
     
     try:
-        # Descargar el archivo CSV de S3
+    
         s3_object = s3_client.get_object(Bucket=S3_BUCKET, Key=filename)
         csv_content = s3_object['Body'].read().decode('utf-8')
         
-        # Leer el archivo CSV desde el contenido descargado
         csv_buffer = StringIO(csv_content)
         reader = csv.DictReader(csv_buffer)
         data = list(reader)
